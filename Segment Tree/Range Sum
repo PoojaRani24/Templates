@@ -1,0 +1,76 @@
+class ST{
+    public:
+    vector<int>seg;
+    ST(int n){
+        seg.resize(4*n,0);
+    }
+
+    void build(int index, int low, int high, vector<int>& nums){
+        if(low==high){
+            seg[index]=nums[low];
+            return;
+        }
+        int mid=low+(high-low)/2;
+        build((2*index)+1,low,mid,nums);
+        build((2*index)+2,mid+1,high,nums);
+        seg[index]=seg[(2*index)+1]+seg[(2*index)+2];
+    }
+
+    void update(int index, int low, int high, int i, int val){
+        if(low==high){
+            seg[index]=val;
+            return;
+        }
+        int mid=low+(high-low)/2;
+        if(i<=mid)
+            update((2*index)+1,low,mid,i,val);
+        else
+            update((2*index)+2,mid+1,high,i,val);
+        seg[index]=seg[(2*index)+1]+seg[(2*index)+2];
+    }
+
+    int query(int index, int low, int high, int l, int r){
+        // No Overlap l r low high or low high l r
+        // Complete Overlap l low high r
+        // Partial Overlap
+
+        if(low>r || l>high) 
+            return 0;
+        else if(low>=l && r>=high)
+            return seg[index];
+        else{
+            int mid=low+(high-low)/2;
+            int left = query((2*index)+1,low,mid,l,r);
+            int right = query((2*index)+2,mid+1,high,l,r);
+            return left+right;
+        }
+    }
+};
+
+class NumArray {
+public:
+    vector<int>arr;
+    int n=0;
+    ST *st;
+    NumArray(vector<int>& nums) {
+        arr=nums;
+        n=nums.size();
+        st= new ST(n);
+        st->build(0,0,n-1,arr);
+    }
+    
+    void update(int index, int val) {
+        st->update(0,0,n-1,index,val);
+    }
+    
+    int sumRange(int left, int right) {
+        return st->query(0,0,n-1,left,right);
+    }
+};
+
+/**
+ * Your NumArray object will be instantiated and called as such:
+ * NumArray* obj = new NumArray(nums);
+ * obj->update(index,val);
+ * int param_2 = obj->sumRange(left,right);
+ */
